@@ -73,13 +73,11 @@ func (wrr *WeightedRoundRobin[T, I]) Select() (ins I) {
 		if w.effectiveWeight < w.Weight {
 			w.effectiveWeight++
 		}
-
 		//4 选中最大临时权重节点
 		if best == nil || w.currentWeight > best.currentWeight {
 			best = w
 		}
 	}
-
 	if best == nil {
 		return
 	}

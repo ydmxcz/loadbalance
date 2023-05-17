@@ -64,7 +64,7 @@ type instanceWrapper[T Hashable, I Instance[T]] struct {
 	weight   int
 }
 
-// WeightedDoubleQueue uses two queue implements
+// DynamicWeighted uses two queue implements
 // a concurrency safe , fast , dynamic weighted load-balance  supported select,
 // add and delete instance operation and these time complexity of operations all are O(1).
 // The performance of this implementation is unrelated to the number of instance.
@@ -97,7 +97,7 @@ type instanceWrapper[T Hashable, I Instance[T]] struct {
 //  2. Maybe my implementation used lock-free queue has some problem,
 //     the result of implementation that used lock-free queue
 //     and atomic operation of benchmark test always about 180 ns/op.
-type WeightedDoubleQueue[T Hashable, I Instance[T]] struct {
+type DynamicWeighted[T Hashable, I Instance[T]] struct {
 	// hashmap is a concurrency hash map
 	hashmap *haxmap.Map[T, *instanceWrapper[T, I]]
 	// mqueue is short for `main-queue`
@@ -112,8 +112,8 @@ type WeightedDoubleQueue[T Hashable, I Instance[T]] struct {
 	mutex  sync.Mutex
 }
 
-func NewWeightedDoubleQueue[T Hashable, I Instance[T]]() *WeightedDoubleQueue[T, I] {
-	return &WeightedDoubleQueue[T, I]{
+func NewWeightedDoubleQueue[T Hashable, I Instance[T]]() *DynamicWeighted[T, I] {
+	return &DynamicWeighted[T, I]{
 		hashmap: haxmap.New[T, *instanceWrapper[T, I]](),
 		mqueue:  &queue[*instanceWrapper[T, I]]{},
 		squeue:  &queue[*instanceWrapper[T, I]]{},
@@ -121,7 +121,7 @@ func NewWeightedDoubleQueue[T Hashable, I Instance[T]]() *WeightedDoubleQueue[T,
 }
 
 // Add some instances and return the number of successful operation
-func (sl *WeightedDoubleQueue[T, I]) Add(instances ...I) int {
+func (sl *DynamicWeighted[T, I]) Add(instances ...I) int {
 	count := 0
 	// traverse all instances
 	for _, instance := range instances {
@@ -153,7 +153,7 @@ func (sl *WeightedDoubleQueue[T, I]) Add(instances ...I) int {
 }
 
 // Del some instances and return the number of successful operation
-func (sl *WeightedDoubleQueue[T, I]) Del(instances ...I) int {
+func (sl *DynamicWeighted[T, I]) Del(instances ...I) int {
 	// sl.hashmap is concurrency safe,the mutex is for simply
 	// the problem of safely updating in this method and safely
 	// reading in the method named `Select` the 'weight' filed in the type of `instanceWarrper`
@@ -176,19 +176,19 @@ func (sl *WeightedDoubleQueue[T, I]) Del(instances ...I) int {
 	return count
 }
 
-func (sl *WeightedDoubleQueue[T, I]) Size() int {
+func (sl *DynamicWeighted[T, I]) Size() int {
 	return int(sl.hashmap.Len())
 }
 
 // ForEach every instances. it is concurrency safe.
-func (sl *WeightedDoubleQueue[T, I]) ForEach(callback func(T, I) bool) {
+func (sl *DynamicWeighted[T, I]) ForEach(callback func(T, I) bool) {
 	haxMapForEach(sl.hashmap, func(key T, node *instanceWrapper[T, I]) bool {
 		return callback(key, node.instance)
 	})
 }
 
 // Get the value corresponding to the key
-func (sl *WeightedDoubleQueue[T, I]) Get(key T) (ins I, ok bool) {
+func (sl *DynamicWeighted[T, I]) Get(key T) (ins I, ok bool) {
 	if w, ok := haxMapGetVal(sl.hashmap, key); ok {
 		return w.instance, true
 	}
@@ -196,29 +196,39 @@ func (sl *WeightedDoubleQueue[T, I]) Get(key T) (ins I, ok bool) {
 }
 
 // Select a instance
-func (sl *WeightedDoubleQueue[T, I]) Select() (ins I) {
+func (sl *DynamicWeighted[T, I]) Select() (ins I) {
+	// 互斥锁加锁
 	sl.mutex.Lock()
 	defer sl.mutex.Unlock()
 repop:
+	// 出队一个节点
 	instNode := sl.mqueue.pop()
+	// 如果此节点为空，则mqueue为空
 	if instNode == nil {
+		// 若squeue也同时为空，则说明负载均衡器没有实例，返回
 		if sl.squeue.Empty() {
 			return
 		}
-		// swap mqueue and squeue
+		// 交换 mqueue 和 squeue
 		sl.mqueue, sl.squeue = sl.squeue, sl.mqueue
+		// 使用goto开启下一次循环
 		goto repop
 	}
+	// 从节点中取出实例
 	inst := instNode.val
+	// 该实例已被删除
 	if inst.weight == minInt64 {
+		// 重新出队一个节点
 		goto repop
 	}
 	inst.weight--
 	if inst.weight == 0 {
+		// 重新获取权重
 		inst.weight = inst.instance.InstanceWeight()
 		sl.squeue.push(instNode)
 	} else {
 		sl.mqueue.push(instNode)
 	}
+	// 返回实例
 	return inst.instance
 }
