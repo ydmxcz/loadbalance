@@ -23,7 +23,7 @@ func Example() {
 	var selector loadbalance.Selector[string, *myService]
 
 	// all methods is concurrncy safe and fast
-	selector = loadbalance.NewWeightedDoubleQueue[string, *myService]()
+	selector = loadbalance.NewDynamicWeighted[string, *myService]()
 
 	// add some instances
 	selector.Add(ins...)

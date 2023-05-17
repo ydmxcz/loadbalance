@@ -112,7 +112,7 @@ type DynamicWeighted[T Hashable, I Instance[T]] struct {
 	mutex  sync.Mutex
 }
 
-func NewWeightedDoubleQueue[T Hashable, I Instance[T]]() *DynamicWeighted[T, I] {
+func NewDynamicWeighted[T Hashable, I Instance[T]]() *DynamicWeighted[T, I] {
 	return &DynamicWeighted[T, I]{
 		hashmap: haxmap.New[T, *instanceWrapper[T, I]](),
 		mqueue:  &queue[*instanceWrapper[T, I]]{},
