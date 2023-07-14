@@ -106,36 +106,31 @@ func Benchmark_DynamicWeighted_Parallel(b *testing.B) {
 }
 
 func Benchmark_GetterLoadBalance_Get_Parallel(b *testing.B) {
-	//b.Run("Random LoadBalance-3", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewRandom[string, *myService](), getInstance(1), b)
-	//})
-	//b.Run("Random LoadBalance-16384", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewRandom[string, *myService](), getInstance(2), b)
-	//})
-	//b.Run("RoundRobin LoadBalance-3", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewRoundRobin[string, *myService](), getInstance(1), b)
-	//})
-	//b.Run("RoundRobin LoadBalance-16384", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewRoundRobin[string, *myService](), getInstance(2), b)
-	//})
-	//b.Run("DynamicWeighted LoadBalance-3", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewWeightedDoubleQueue[string, *myService](), getInstance(1), b)
-	//})
-	//b.Run("DynamicWeighted LoadBalance-16384", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewWeightedDoubleQueue[string, *myService](), getInstance(2), b)
-	//})
+	b.Run("Random LoadBalance-3", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewRandom[string, *myService](), getInstance(1), b)
+	})
+	b.Run("Random LoadBalance-16384", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewRandom[string, *myService](), getInstance(2), b)
+	})
+	b.Run("RoundRobin LoadBalance-3", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewRoundRobin[string, *myService](), getInstance(1), b)
+	})
+	b.Run("RoundRobin LoadBalance-16384", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewRoundRobin[string, *myService](), getInstance(2), b)
+	})
+	
 	b.Run("WeightRoundRobin 3 Instances", func(b *testing.B) {
 		benchmarkLoadBalanceParallel(loadbalance.NewWeightRoundRobin[string, *myService](), getInstance(1), b)
 	})
 	b.Run("WeightRoundRobin 16384 Instances", func(b *testing.B) {
 		benchmarkLoadBalanceParallel(loadbalance.NewWeightRoundRobin[string, *myService](), getInstance(2), b)
 	})
-	//b.Run("WeightedRandom LoadBalance-3", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewWeightedRandom[string, *myService](), getInstance(1), b)
-	//})
-	//b.Run("WeightedRandom LoadBalance-16384", func(b *testing.B) {
-	//	benchmarkLoadBalanceParallel(loadbalance.NewWeightedRandom[string, *myService](), getInstance(2), b)
-	//})
+	b.Run("WeightedRandom LoadBalance-3", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewWeightedRandom[string, *myService](), getInstance(1), b)
+	})
+	b.Run("WeightedRandom LoadBalance-16384", func(b *testing.B) {
+		benchmarkLoadBalanceParallel(loadbalance.NewWeightedRandom[string, *myService](), getInstance(2), b)
+	})
 }
 
 func clearSymbol(text []byte, check func(rune) bool) []byte {
