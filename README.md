@@ -2,7 +2,7 @@
 
 A Load Balance lib for Go.
 
-Implement * Faster Loadbalance Algorithm named DynamicWeighted *
+Implement **Faster Loadbalance Algorithm named DynamicWeighted**
 
 `DynamicWeighted` using two queues implements a concurrency safe , fast , dynamic weighted load-balance  supported select, add and delete instance operation and these time complexity of operations all are O(1).The performance of this implementation is unrelated to the number of instance.
 
