@@ -153,6 +153,18 @@ func (sl *DynamicWeighted[T, I]) Add(instances ...I) int {
 }
 
 // Del some instances and return the number of successful operation
+func (sl *DynamicWeighted[T, I]) DelByKey(keys ...T) int {
+	k := make([]I, 0)
+	for _, key := range keys {
+		ins, ok := sl.Get(key)
+		if ok {
+			k = append(k, ins)
+		}
+	}
+	return sl.Del(k...)
+}
+
+// Del some instances and return the number of successful operation
 func (sl *DynamicWeighted[T, I]) Del(instances ...I) int {
 	// sl.hashmap is concurrency safe,the mutex is for simply
 	// the problem of safely updating in this method and safely

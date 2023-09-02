@@ -10,6 +10,10 @@ import (
 	"github.com/ydmxcz/loadbalance"
 )
 
+// func mainaas() {
+// 	xsync.NewTypedMapOf[]()
+// }
+
 type myService struct {
 	Address         string
 	Memory          int
@@ -62,7 +66,6 @@ func TestSupplirLoadBalance(t *testing.T) {
 	testSupplirLoadBalance("Random LoadBalance", loadbalance.NewRandom[string, *myService](), t)
 	testSupplirLoadBalance("RoundRobin LoadBalance", loadbalance.NewRoundRobin[string, *myService](), t)
 	testSupplirLoadBalance("DynamicWeighted LoadBalance", loadbalance.NewDynamicWeighted[string, *myService](), t)
-	testSupplirLoadBalance("WeightRoundRobin LoadBalance", loadbalance.NewWeightRoundRobin[string, *myService](), t)
 	testSupplirLoadBalance("WeightedRandom LoadBalance", loadbalance.NewWeightedRandom[string, *myService](), t)
 }
 
@@ -117,13 +120,6 @@ func Benchmark_GetterLoadBalance_Get_Parallel(b *testing.B) {
 	})
 	b.Run("RoundRobin LoadBalance-16384", func(b *testing.B) {
 		benchmarkLoadBalanceParallel(loadbalance.NewRoundRobin[string, *myService](), getInstance(2), b)
-	})
-	
-	b.Run("WeightRoundRobin 3 Instances", func(b *testing.B) {
-		benchmarkLoadBalanceParallel(loadbalance.NewWeightRoundRobin[string, *myService](), getInstance(1), b)
-	})
-	b.Run("WeightRoundRobin 16384 Instances", func(b *testing.B) {
-		benchmarkLoadBalanceParallel(loadbalance.NewWeightRoundRobin[string, *myService](), getInstance(2), b)
 	})
 	b.Run("WeightedRandom LoadBalance-3", func(b *testing.B) {
 		benchmarkLoadBalanceParallel(loadbalance.NewWeightedRandom[string, *myService](), getInstance(1), b)
